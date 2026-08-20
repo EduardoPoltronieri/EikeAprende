@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EikeAprende - Trilha de Ilhas Matific</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- FUNDO ANIMADO COM SÍMBOLOS MATEMÁTICOS BEM VISÍVEIS -->
+    <div class="math-background">
+        <span style="--i:11;">π</span>
+        <span style="--i:12;">√</span>
+        <span style="--i:24;">+</span>
+        <span style="--i:10;">×</span>
+        <span style="--i:14;">÷</span>
+        <span style="--i:23;">−</span>
+        <span style="--i:18;">∑</span>
+        <span style="--i:16;">∞</span>
+        <span style="--i:19;">x²</span>
+        <span style="--i:20;">≠</span>
+    </div>
+
+    <!-- FITAS DE INTERDITADO (SUPER NÍTIDAS) PARA FRAUDE -->
+    <div id="crime-tape-overlay" class="crime-tape-overlay" style="display: none;">
+        <div class="tape tape-1"><span>⚠️ PERIGO ⚠️ INFRAÇÃO DETECTADA ⚠️ NÃO ULTRAPASSE ⚠️</span></div>
+        <div class="tape tape-2"><span>⛔ BLOQUEADO ⛔ TENTATIVA DE COLA DETECTADA ⛔ BLOQUEADO ⛔</span></div>
+        <div class="tape tape-3"><span>⚠️ PERIGO ⚠️ CENA INTERDITADA ⚠️ AVISO ENVIADO AO PROFESSOR ⚠️</span></div>
+    </div>
+
+    <!-- MODAL DE ALERTA DE INFRAÇÃO EXPANDIDO -->
+    <div id="modal-warning" class="modal-overlay" style="display: none;">
+        <div class="modal-card modal-card-lg">
+            <div class="warning-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+            <h2>ATENÇÃO! INFRAÇÃO DETECTADA</h2>
+            <p id="warning-text" class="warning-main-text">Tentativa de cola ou saída da avaliação detectada!</p>
+            <p class="warning-sub">Esta ação foi registrada e enviada diretamente ao Banco de Dados do Administrador/Professor.</p>
+            <p class="warning-footer-note">Por favor, mantenha o foco e continue a prova em modo tela cheia para evitar a anulação da sua nota.</p>
+            <button id="btn-resume" class="btn btn-primary full-width btn-lg" type="button">Voltar à Prova e Entrar em Tela Cheia</button>
+        </div>
+    </div>
+
+    <!-- TELA 1: LOGIN ALUNO (METADE DA TELA) -->
+    <div id="screen-login" class="screen active">
+        <div class="login-card login-card-half">
+            <div class="logo"><i class="fa-solid fa-wand-magic-sparkles"></i> Eike<span>Aprende</span></div>
+            <h2>Sua Aventura Começa Aqui!</h2>
+            <p>Digite seu nome para entrar no mapa das ilhas e encarar os desafios.</p>
+            
+            <div class="input-group">
+                <i class="fa-solid fa-user-astronaut"></i>
+                <input type="text" id="username" placeholder="Seu nome de explorador..." autocomplete="off">
+            </div>
+            <button id="btn-start-game" class="btn btn-primary full-width btn-lg" type="button">
+                Explorar Trilha <i class="fa-solid fa-compass"></i>
+            </button>
+            <button id="btn-open-admin" class="btn-link" type="button">Acesso Restrito ao Supervisor Sênior!</button>
+        </div>
+    </div>
+
+    <!-- TELA 2: MAPA DE ILHAS HORIZONTAL -->
+    <div id="screen-map" class="screen">
+        <header class="top-bar">
+            <div class="user-info">
+                <div class="avatar-circle"><i class="fa-solid fa-robot"></i></div>
+                <span id="display-username">Explorador</span>
+            </div>
+            <div class="dashboard-stats">
+                <div class="stat-badge orange">
+                    <i class="fa-solid fa-star"></i> Pontos: <span id="map-score">0</span>
+                </div>
+            </div>
+            <div class="top-actions">
+                <button id="btn-admin-map" class="btn btn-secondary btn-sm" type="button"><i class="fa-solid fa-lock"></i> Admin</button>
+                <button id="btn-print-map" class="btn btn-secondary btn-sm" type="button"><i class="fa-solid fa-file-pdf"></i> Imprimir PDF</button>
+            </div>
+        </header>
+
+        <main class="map-wrapper">
+            <h1 class="map-title">Trilha do Conhecimento</h1>
+            <p class="map-subtitle">Arraste para o lado para avançar na sua jornada pelas ilhas!</p>
+
+            <div class="horizontal-scroll-area">
+                <div class="matific-horizontal-path">
+                    <div class="path-line-horizontal"></div>
+
+                    <div class="island-node pos-up" onclick="startIsland(1)">
+                        <div class="node-badge">Ilha 1</div>
+                        <div class="island-bubble color-1"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="island-details">
+                            <h3>Tabuada Rápida</h3>
+                            <p>12 Questões • ~6 min</p>
+                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="island-node pos-down" onclick="startIsland(2)">
+                        <div class="node-badge">Ilha 2</div>
+                        <div class="island-bubble color-2"><i class="fa-solid fa-divide"></i></div>
+                        <div class="island-details">
+                            <h3>Divisão Exata</h3>
+                            <p>12 Questões • ~6 min</p>
+                            <div class="stars"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="island-node pos-up" onclick="startIsland(3)">
+                        <div class="node-badge">Ilha 3</div>
+                        <div class="island-bubble color-3"><i class="fa-solid fa-calculator"></i></div>
+                        <div class="island-details">
+                            <h3>Subtração Ninja</h3>
+                            <p>12 Questões • ~7 min</p>
+                            <div class="stars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="island-node pos-down" onclick="startIsland(4)">
+                        <div class="node-badge">Ilha 4</div>
+                        <div class="island-bubble color-4"><i class="fa-solid fa-layer-group"></i></div>
+                        <div class="island-details">
+                            <h3>Expressões Mistas</h3>
+                            <p>12 Questões • ~7 min</p>
+                            <div class="stars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="island-node pos-up" onclick="startIsland(5)">
+                        <div class="node-badge">Ilha 5</div>
+                        <div class="island-bubble color-5"><i class="fa-solid fa-percent"></i></div>
+                        <div class="island-details">
+                            <h3>Porcentagens</h3>
+                            <p>12 Questões • ~7 min</p>
+                            <div class="stars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                    </div>
+
+                    <div class="island-node pos-down" onclick="startIsland(6)">
+                        <div class="node-badge final">Mestre</div>
+                        <div class="island-bubble color-6"><i class="fa-solid fa-crown"></i></div>
+                        <div class="island-details">
+                            <h3>Desafio Supremo</h3>
+                            <p>12 Questões • ~7 min</p>
+                            <div class="stars"><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i><i class="fa-regular fa-star"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- TELA 3: QUIZ DE PROVA (LAYOUT TELA CHEIA) -->
+    <div id="screen-quiz" class="screen">
+        <div class="full-quiz-wrapper">
+            <header class="quiz-top-bar">
+                <div class="quiz-info-left">
+                    <span class="badge-island" id="current-island-title">Ilha 1</span>
+                    <span class="badge-counter" id="question-counter">Questão 1/12</span>
+                </div>
+                
+                <div class="timer-badge" id="timer-badge">
+                    <i class="fa-solid fa-clock"></i> <span id="timer-display">30s</span>
+                </div>
+
+                <div class="quiz-info-right">
+                    <div class="score-badge">
+                        <i class="fa-solid fa-trophy"></i> <span id="quiz-score">0</span> pts
+                    </div>
+                </div>
+            </header>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <main class="quiz-full-content">
+                <div class="question-box">
+                    <h2 class="question-text" id="question-text">Carregando pergunta...</h2>
+                </div>
+
+                <div class="options-grid-full" id="options-grid"></div>
+            </main>
+
+            <footer class="quiz-bottom-bar">
+                <div class="feedback-message" id="feedback-message"></div>
+                <button id="btn-next" class="btn btn-primary btn-large" type="button" style="display: none;">
+                    Próxima Questão <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </footer>
+        </div>
+    </div>
+
+    <!-- TELA 4: PAINEL ADMIN -->
+    <div id="screen-admin" class="screen">
+        <div class="admin-container">
+            <header class="admin-header">
+                <h2><i class="fa-solid fa-user-shield"></i> Painel Administrativo</h2>
+                <button class="btn btn-secondary btn-sm" type="button" onclick="showScreen('screen-map')">Sair do Admin</button>
+            </header>
+
+            <div class="admin-content">
+                <h3>Relatório Local de Infrações</h3>
+                <table class="logs-table">
+                    <thead>
+                        <tr>
+                            <th>Data / Hora</th>
+                            <th>Aluno</th>
+                            <th>Tipo de Evento</th>
+                            <th>Detalhes</th>
+                        </tr>
+                    </thead>
+                    <tbody id="logs-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- FOLHA DE PROVA (PDF) -->
+    <div id="print-sheet" class="print-sheet">
+        <div class="print-header">
+            <h1>AVALIAÇÃO DE MATEMÁTICA</h1>
+            <div class="student-info">
+                <p><strong>Nome do Aluno:</strong> <span id="print-student-name">__________________</span></p>
+            </div>
+        </div>
+        <hr class="print-divider">
+        <ol class="print-questions-list" id="print-questions-list"></ol>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

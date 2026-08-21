@@ -1,4 +1,3 @@
-// ESTADO DO JOGO E TIMERS
 const STATE = {
     username: '',
     totalScore: 0,
@@ -12,10 +11,6 @@ const STATE = {
 };
 
 const ADMIN_PASSWORD = "admin";
-
-const ISLAND_TIMES = {
-    1: 30, 2: 30, 3: 35, 4: 35, 5: 35, 6: 35
-};
 
 function showScreen(screenId) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -40,10 +35,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
             STATE.username = name;
             document.getElementById('display-username').innerText = STATE.username;
-            
-            const printName = document.getElementById('print-student-name');
-            if (printName) printName.innerText = STATE.username;
-
             showScreen('screen-map');
         });
     }
@@ -79,25 +70,85 @@ window.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+});
 
-    // IMPRESSÃO PDF
-    const btnPrint = document.getElementById('btn-print-map');
-    if (btnPrint) {
-        btnPrint.addEventListener('click', () => {
-            const printList = document.getElementById('print-questions-list');
-            if (printList) {
-                printList.innerHTML = '';
-                for (let i = 0; i < 20; i++) {
-                    const q = generateIslandQuestions(Math.floor(Math.random() * 6) + 1, 1)[0];
-                    const li = document.createElement('li');
-                    li.innerHTML = `<strong>${q.text.replace('?', '_____')}</strong>`;
-                    printList.appendChild(li);
-                }
-                window.print();
-            }
+// MODAL DE SELEÇÃO DO PDF
+function openPdfModal() {
+    document.getElementById('modal-pdf-select').style.display = 'flex';
+}
+
+function closePdfModal() {
+    document.getElementById('modal-pdf-select').style.display = 'none';
+}
+
+function confirmGeneratePDF() {
+    const select = document.getElementById('pdf-island-select');
+    const islandId = parseInt(select.value, 10);
+    closePdfModal();
+    generatePrintablePDF(islandId);
+}
+
+// INJETA AS QUESTÕES FORMATADAS E IMPRIME O PDF
+function generatePrintablePDF(islandId) {
+    const questions = generateIslandQuestions(islandId, 8); // 8 Questões por folha estilo prova
+    const printContainer = document.getElementById('print-questions-list');
+    const printStudent = document.getElementById('print-student-name');
+    const printGrade = document.getElementById('print-grade-name');
+    const printTitle = document.getElementById('print-exam-title');
+
+    // Determina o Ano com base na Ilha
+    let gradeName = "1º Ano";
+    if (islandId >= 4 && islandId <= 6) gradeName = "2º Ano";
+    else if (islandId >= 7 && islandId <= 9) gradeName = "3º Ano";
+    else if (islandId >= 10 && islandId <= 12) gradeName = "4º Ano";
+    else if (islandId >= 13 && islandId <= 15) gradeName = "5º Ano";
+    else if (islandId >= 16) gradeName = "6º Ano";
+
+    if (printStudent) printStudent.innerText = STATE.username ? STATE.username : "_____________________________________________";
+    if (printGrade) printGrade.innerText = gradeName;
+    if (printTitle) printTitle.innerText = `AVALIAÇÃO BIMESTRAL – MATEMÁTICA – ILHA ${islandId}`;
+
+    if (printContainer) {
+        printContainer.innerHTML = '';
+        const labels = ['a', 'b', 'c', 'd', 'e'];
+
+        questions.forEach((q, index) => {
+            const item = document.createElement('div');
+            item.className = 'print-question-item';
+
+            let optionsHtml = '';
+            q.options.slice(0, 5).forEach((opt, optIdx) => {
+                optionsHtml += `<div class="print-option-item"><strong>${labels[optIdx]})</strong> ${opt}</div>`;
+            });
+
+            item.innerHTML = `
+                <div class="print-question-header">
+                    <strong>${index + 1}. (1,25)</strong> ${q.text}
+                </div>
+                <div class="print-options-grid">
+                    ${optionsHtml}
+                </div>
+            `;
+            printContainer.appendChild(item);
         });
     }
-});
+
+    // Executa a caixa de impressão/PDF do navegador
+    setTimeout(() => {
+        window.print();
+    }, 300);
+}
+
+function openVideo(title, url) {
+    document.getElementById('video-title').innerText = title;
+    document.getElementById('youtube-player').src = url + "?autoplay=1";
+    document.getElementById('modal-video').style.display = 'flex';
+}
+
+function closeVideoModal() {
+    document.getElementById('youtube-player').src = "";
+    document.getElementById('modal-video').style.display = 'none';
+}
 
 function authAdmin() {
     const pass = prompt("Digite a senha do Administrador/Professor:");
@@ -111,7 +162,7 @@ function authAdmin() {
 
 function startIsland(islandId) {
     STATE.currentIsland = islandId;
-    STATE.timePerQuestion = ISLAND_TIMES[islandId] || 30;
+    STATE.timePerQuestion = 30;
     STATE.currentQuestionIndex = 0;
     STATE.quizQuestions = generateIslandQuestions(islandId, 12);
     
@@ -128,38 +179,125 @@ function generateIslandQuestions(islandId, count) {
     for (let i = 0; i < count; i++) {
         let ans, txt;
 
-        if (islandId === 1) {
-            let n1 = Math.floor(Math.random() * 9) + 2;
-            let n2 = Math.floor(Math.random() * 9) + 2;
-            ans = n1 * n2; txt = `${n1} × ${n2} = ?`;
-        } else if (islandId === 2) {
-            let n2 = Math.floor(Math.random() * 8) + 2;
-            let mult = Math.floor(Math.random() * 10) + 1;
-            ans = mult; txt = `${n2 * mult} ÷ ${n2} = ?`;
-        } else if (islandId === 3) {
-            let n1 = Math.floor(Math.random() * 400) + 100;
-            let n2 = Math.floor(Math.random() * n1);
-            ans = n1 - n2; txt = `${n1} - ${n2} = ?`;
-        } else if (islandId === 4) {
-            let a = Math.floor(Math.random() * 10) + 1;
-            let b = Math.floor(Math.random() * 5) + 1;
-            let c = Math.floor(Math.random() * 20) + 5;
-            ans = (a * b) + c; txt = `(${a} × ${b}) + ${c} = ?`;
-        } else if (islandId === 5) {
-            let perc = [10, 20, 50][Math.floor(Math.random() * 3)];
-            let val = (Math.floor(Math.random() * 10) + 1) * 10;
-            ans = (perc / 100) * val; txt = `${perc}% de ${val} = ?`;
-        } else {
-            let n1 = Math.floor(Math.random() * 50) + 10;
-            let n2 = Math.floor(Math.random() * 50) + 10;
-            let n3 = Math.floor(Math.random() * 20) + 1;
-            ans = n1 + n2 - n3; txt = `${n1} + ${n2} - ${n3} = ?`;
+        switch (islandId) {
+            case 1: {
+                let a = Math.floor(Math.random() * 10) + 1;
+                let b = Math.floor(Math.random() * 10) + 1;
+                ans = a + b; txt = `Resolva a operação de adição: ${a} + ${b} = ?`;
+                break;
+            }
+            case 2: {
+                let a = Math.floor(Math.random() * 10) + 10;
+                let b = Math.floor(Math.random() * 9) + 1;
+                ans = a - b; txt = `Calcule a diferença: ${a} - ${b} = ?`;
+                break;
+            }
+            case 3: {
+                let a = Math.floor(Math.random() * 10) + 1;
+                ans = a + a; txt = `Qual é o valor do dobro do número ${a}?`;
+                break;
+            }
+            case 4: {
+                let a = Math.floor(Math.random() * 50) + 20;
+                let b = Math.floor(Math.random() * 30) + 10;
+                ans = a + b; txt = `Determine o resultado da soma: ${a} + ${b} = ?`;
+                break;
+            }
+            case 5: {
+                let base = [2, 3, 5][Math.floor(Math.random() * 3)];
+                let mult = Math.floor(Math.random() * 9) + 1;
+                ans = base * mult; txt = `Calcule o valor da multiplicação: ${base} × ${mult} = ?`;
+                break;
+            }
+            case 6: {
+                let mult = Math.floor(Math.random() * 20) + 1;
+                let total = mult * 2;
+                ans = mult; txt = `Qual é a metade exata do número ${total}?`;
+                break;
+            }
+            case 7: {
+                let a = Math.floor(Math.random() * 9) + 2;
+                let b = Math.floor(Math.random() * 9) + 2;
+                ans = a * b; txt = `Calcule o produto das dezenas: ${a} × ${b} = ?`;
+                break;
+            }
+            case 8: {
+                let b = Math.floor(Math.random() * 8) + 2;
+                let mult = Math.floor(Math.random() * 9) + 1;
+                ans = mult; txt = `Determine o quociente da divisão: ${b * mult} ÷ ${b} = ?`;
+                break;
+            }
+            case 9: {
+                let a = Math.floor(Math.random() * 500) + 150;
+                let b = Math.floor(Math.random() * a);
+                ans = a - b; txt = `Resolva a subtração com empréstimo: ${a} - ${b} = ?`;
+                break;
+            }
+            case 10: {
+                let a = Math.floor(Math.random() * 8) + 2;
+                let b = Math.floor(Math.random() * 5) + 1;
+                let c = Math.floor(Math.random() * 15) + 5;
+                ans = (a * b) + c; txt = `Considere a expressão numéricas: (${a} × ${b}) + ${c}. O valor correto é:`;
+                break;
+            }
+            case 11: {
+                let num = Math.floor(Math.random() * 3) + 1;
+                let den = num + Math.floor(Math.random() * 3) + 1;
+                ans = `${num}/${den}`; txt = `Qual fração representa ${num} partes tomadas de um total de ${den}?`;
+                break;
+            }
+            case 12: {
+                let v1 = (Math.floor(Math.random() * 20) + 1) * 0.5;
+                let v2 = (Math.floor(Math.random() * 10) + 1) * 0.5;
+                ans = (v1 + v2).toFixed(2); txt = `Somando os valores monetários de R$ ${v1.toFixed(2)} + R$ ${v2.toFixed(2)}, obtemos:`;
+                break;
+            }
+            case 13: {
+                let perc = [10, 25, 50, 75][Math.floor(Math.random() * 4)];
+                let val = (Math.floor(Math.random() * 8) + 1) * 20;
+                ans = (perc / 100) * val; txt = `Calcule a porcentagem indicada: ${perc}% de R$ ${val} é igual a:`;
+                break;
+            }
+            case 14: {
+                let div = Math.floor(Math.random() * 5) + 2;
+                let mult = Math.floor(Math.random() * 10) + 2;
+                let resto = Math.floor(Math.random() * (div - 1)) + 1;
+                let total = (div * mult) + resto;
+                ans = resto; txt = `O valor exato do resto da divisão de ${total} por ${div} é igual a:`;
+                break;
+            }
+            case 15: {
+                let lado = Math.floor(Math.random() * 12) + 2;
+                ans = lado * 4; txt = `Determine o perímetro de um quadrado que possui lados medindo ${lado} cm:`;
+                break;
+            }
+            case 16: {
+                let base = Math.floor(Math.random() * 7) + 2;
+                ans = base * base; txt = `O valor numérico correspondente à potência de ${base}² é igual a:`;
+                break;
+            }
+            case 17: {
+                ans = 12; txt = `Determine o Menor Múltiplo Comum (MMC) entre os números 4 e 6:`;
+                break;
+            }
+            case 18: default: {
+                let x = Math.floor(Math.random() * 10) + 2;
+                let b = Math.floor(Math.random() * 15) + 1;
+                ans = x; txt = `Dada a equação simples x + ${b} = ${x + b}, o valor da incógnita x é:`;
+                break;
+            }
         }
 
         const opts = new Set([ans]);
-        while (opts.size < 4) {
-            let fake = ans + (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
-            if (fake >= 0) opts.add(fake);
+        while (opts.size < 5) {
+            let fake;
+            if (typeof ans === 'number') {
+                fake = ans + (Math.floor(Math.random() * 6) + 1) * (Math.random() > 0.5 ? 1 : -1);
+                if (fake >= 0) opts.add(fake);
+            } else {
+                fake = `${Math.floor(Math.random() * 4) + 1}/${Math.floor(Math.random() * 6) + 5}`;
+                opts.add(fake);
+            }
         }
         list.push({ text: txt, answer: ans, options: Array.from(opts).sort(() => Math.random() - 0.5) });
     }
@@ -211,7 +349,7 @@ function startQuestionTimer() {
 function handleTimeOut() {
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
     const q = STATE.quizQuestions[STATE.currentQuestionIndex];
-    document.getElementById('feedback-message').innerText = `⏰ TEMPO ESGOTADO! SEU BURRO, SEU POHA! (Resposta: ${q.answer})`;
+    document.getElementById('feedback-message').innerText = `⏰ TEMPO ESGOTADO! (Resposta: ${q.answer})`;
     document.getElementById('feedback-message').style.color = 'var(--error-color)';
 
     const btnNext = document.getElementById('btn-next');
@@ -223,7 +361,7 @@ function checkAnswer(btn, selected, correct) {
     clearInterval(STATE.timerInterval);
     document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
 
-    if (selected === correct) {
+    if (String(selected) === String(correct)) {
         btn.classList.add('correct');
         document.getElementById('feedback-message').innerText = '✨ Resposta Correta! Mandou Bem!';
         document.getElementById('feedback-message').style.color = 'var(--success-color)';
@@ -231,7 +369,7 @@ function checkAnswer(btn, selected, correct) {
         if (typeof confetti === 'function') confetti({ particleCount: 35 });
     } else {
         btn.classList.add('wrong');
-        document.getElementById('feedback-message').innerText = `❌ SEU BURRO, SEU POHA! (Certa: ${correct})`;
+        document.getElementById('feedback-message').innerText = `❌ RESPOSTA INCORRETA! (Certa: ${correct})`;
         document.getElementById('feedback-message').style.color = 'var(--error-color)';
     }
 
@@ -244,7 +382,6 @@ function checkAnswer(btn, selected, correct) {
     btnNext.innerText = (STATE.currentQuestionIndex === STATE.quizQuestions.length - 1) ? 'Finalizar Ilha 🏆' : 'Próxima Questão ➡️';
 }
 
-// SISTEMA ANTIFRAUDE LOCAL
 function logFraudEvent(eventType, details) {
     const entry = {
         time: new Date().toLocaleTimeString('pt-BR'),
@@ -268,7 +405,6 @@ function triggerAntiCheatAlert(message, type) {
     if (modal) modal.style.display = 'flex';
 }
 
-// DETECÇÃO DE SAÍDA E ATALHOS
 document.addEventListener('fullscreenchange', () => {
     const isQuizActive = document.getElementById('screen-quiz').classList.contains('active');
     if (!document.fullscreenElement && isQuizActive) {
@@ -299,7 +435,6 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-// EXIBE LOGS NO PAINEL ADMIN SEM PRECISAR DE BANCO
 function renderLocalLogs() {
     const tbody = document.getElementById('logs-tbody');
     if (!tbody) return;

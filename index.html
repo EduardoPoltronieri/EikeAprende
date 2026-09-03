@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matemática Fácil</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+</head>
+<body>
+
+    <!-- FUNDO COM SÍMBOLOS MATEMÁTICOS -->
+    <div class="math-background">
+        <span style="--i:1;">+</span>
+        <span style="--i:2;">÷</span>
+        <span style="--i:3;">×</span>
+        <span style="--i:4;">−</span>
+        <span style="--i:5;">√</span>
+        <span style="--i:6;">%</span>
+        <span style="--i:7;">π</span>
+        <span style="--i:8;">=</span>
+    </div>
+
+    <!-- OVERLAY DE FITAS DE ISOLAMENTO (ANTIFRAUDE) -->
+    <div id="crime-tape-overlay" class="crime-tape-overlay" style="display: none;">
+        <div class="tape tape-1"><span>PROVA INTERDITADA • INFRAÇÃO DETECTADA</span></div>
+        <div class="tape tape-2"><span>ÁREA SOB MONITORAMENTO • ACESSO NEGADO</span></div>
+        <div class="tape tape-3"><span>SISTEMA ANTIFRAUDE ATIVO • CONTATE O PROFESSOR</span></div>
+    </div>
+
+    <!-- MODAL ANTIFRAUDE -->
+    <div id="modal-warning" class="modal-overlay" style="display: none;">
+        <div class="modal-card-lg">
+            <i class="fas fa-exclamation-triangle warning-icon"></i>
+            <h2>INFRAÇÃO REGISTRADA!</h2>
+            <p id="warning-text" class="warning-main-text">Ação não permitida detectada durante a avaliação.</p>
+            <p class="warning-sub">Esta tentativa foi gravada no painel do professor para análise pedagógica.</p>
+            <p class="warning-footer-note">Sua prova continuará monitorada em tempo real.</p>
+            <button id="btn-resume" class="btn btn-primary btn-lg full-width">Ciente, Retornar à Prova</button>
+        </div>
+    </div>
+
+    <!-- MODAL PARA IMPRESSÃO DE PDF DA PROVA -->
+    <div id="modal-pdf-select" class="modal-overlay" style="display: none;">
+        <div class="modal-card-md">
+            <h2><i class="fas fa-file-pdf"></i> Gerar Prova Impressa</h2>
+            <p>Selecione a Ilha correspondente para gerar o arquivo A4 pronto para impressão:</p>
+            
+            <div class="form-group">
+                <label for="pdf-island-select">Selecione o Conteúdo / Ilha:</label>
+                <select id="pdf-island-select" class="custom-select">
+                    <option value="7">Ilha 7 - Multiplicação (3º Ano)</option>
+                    <option value="8">Ilha 8 - Divisão Simples (3º Ano)</option>
+                    <option value="9">Ilha 9 - Subtração com Empréstimo (3º Ano)</option>
+                    <option value="10">Ilha 10 - Expressões Numéricas (4º Ano)</option>
+                    <option value="11">Ilha 11 - Introdução às Frações (4º Ano)</option>
+                    <option value="12">Ilha 12 - Sistema Monetário (4º Ano)</option>
+                    <option value="13">Ilha 13 - Porcentagem Básica (5º Ano)</option>
+                    <option value="14">Ilha 14 - Divisão com Resto (5º Ano)</option>
+                    <option value="15">Ilha 15 - Geometria e Perímetro (5º Ano)</option>
+                    <option value="16">Ilha 16 - Potenciação Básica (6º Ano)</option>
+                    <option value="17">Ilha 17 - MMC (6º Ano)</option>
+                    <option value="18">Ilha 18 - Equação do 1º Grau (6º Ano)</option>
+                    <option value="19">Ilha 19 - Ângulos Complementares (Avançado)</option>
+                    <option value="20">Ilha 20 - Média Aritmética (Avançado)</option>
+                    <option value="21">Ilha 21 - Teorema de Pitágoras (Avançado)</option>
+                    <option value="22">Ilha 22 - Equação do 2º Grau (Avançado)</option>
+                    <option value="23">Ilha 23 - Trigonometria (Avançado)</option>
+                    <option value="24">Ilha 24 - Funções (Avançado)</option>
+                </select>
+            </div>
+
+            <div style="display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="closePdfModal()">Cancelar</button>
+                <button class="btn btn-primary" onclick="confirmGeneratePDF()"><i class="fas fa-print"></i> Gerar PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLAYER DE VÍDEO NO MODAL -->
+    <div id="modal-video" class="modal-overlay" style="display: none;">
+        <div class="video-modal-card">
+            <button class="close-video-btn" onclick="closeVideoModal()">&times;</button>
+            <h3 id="video-title">Videoaula</h3>
+            <div class="iframe-container">
+                <iframe id="youtube-player" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 1: LOGIN DA JORNADA -->
+    <div id="screen-login" class="screen active">
+        <div class="login-card-half">
+            <div class="logo"><i class="fas fa-compass"></i> Ilhas da <span>Matemática</span></div>
+            <h2>Bem-vindo, Explorador!</h2>
+            <p>Prepare-se para embarcar em uma jornada do conhecimento. Identifique-se para acessar os territórios numéricos.</p>
+            <form id="login-form">
+                <div class="input-group">
+                    <i class="fas fa-user-astronaut"></i>
+                    <input type="text" id="username" placeholder="Digite seu nome ou apelido..." required autocomplete="off">
+                </div>
+                <button type="submit" id="btn-start-game" class="btn btn-primary btn-large full-width">Iniciar Expedição <i class="fas fa-arrow-right"></i></button>
+            </form>
+            <button type="button" id="btn-open-admin" class="btn-link">Acesso do Professor / Administrador</button>
+        </div>
+    </div>
+
+    <!-- TELA 2: MAPA DE ILHAS DE CONHECIMENTO -->
+    <div id="screen-map" class="screen">
+        <div class="top-bar">
+            <div class="user-info">
+                <div class="avatar-circle"><i class="fas fa-user"></i></div>
+                <span id="display-username">Explorador</span>
+            </div>
+            <div class="top-actions">
+                <button class="btn btn-study" onclick="showScreen('screen-study')"><i class="fas fa-graduation-cap"></i> Academia de Estudos</button>
+                <button class="btn btn-secondary" onclick="openPdfModal()"><i class="fas fa-file-pdf"></i> Imprimir Prova</button>
+                <button class="btn btn-secondary" id="btn-admin-map"><i class="fas fa-user-shield"></i> Painel Professor</button>
+            </div>
+        </div>
+
+        <div class="map-wrapper-full">
+            <h1 class="map-title">Mapa do Conhecimento</h1>
+            <p class="map-subtitle">Escolha um dos territórios numéricos para iniciar os desafios:</p>
+
+            <div class="islands-grid-container">
+                
+                <!-- ILHAS 1 A 6 BLOQUEADAS (INTERDITADAS) -->
+                <div class="island-card locked" onclick="islandLockedAlert(1)">
+                    <span class="node-badge grade-1">1º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 1: Soma Simples</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <div class="island-card locked" onclick="islandLockedAlert(2)">
+                    <span class="node-badge grade-1">1º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 2: Subtração Inicial</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <div class="island-card locked" onclick="islandLockedAlert(3)">
+                    <span class="node-badge grade-1">1º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 3: Dobro e Metade</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <div class="island-card locked" onclick="islandLockedAlert(4)">
+                    <span class="node-badge grade-2">2º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 4: Adição Intermediária</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <div class="island-card locked" onclick="islandLockedAlert(5)">
+                    <span class="node-badge grade-2">2º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 5: Introdução à Tabuada</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <div class="island-card locked" onclick="islandLockedAlert(6)">
+                    <span class="node-badge grade-2">2º Ano</span>
+                    <div class="island-icon"><i class="fas fa-lock"></i></div>
+                    <h3>Ilha 6: Dezenas e Centenas</h3>
+                    <p>Interditada pelo Professor</p>
+                </div>
+
+                <!-- ILHAS LIBERADAS (3º ANO AO AVANÇADO) -->
+                <div class="island-card color-1" onclick="startIsland(7)">
+                    <span class="node-badge grade-3">3º Ano</span>
+                    <div class="island-icon"><i class="fas fa-times"></i></div>
+                    <h3>Ilha 7: Multiplicação</h3>
+                    <p>Produto das dezenas</p>
+                </div>
+
+                <div class="island-card color-2" onclick="startIsland(8)">
+                    <span class="node-badge grade-3">3º Ano</span>
+                    <div class="island-icon"><i class="fas fa-divide"></i></div>
+                    <h3>Ilha 8: Divisão Simples</h3>
+                    <p>Quocientes exatos</p>
+                </div>
+
+                <div class="island-card color-3" onclick="startIsland(9)">
+                    <span class="node-badge grade-3">3º Ano</span>
+                    <div class="island-icon"><i class="fas fa-minus-square"></i></div>
+                    <h3>Ilha 9: Subtração Avançada</h3>
+                    <p>Contas com empréstimo</p>
+                </div>
+
+                <div class="island-card color-4" onclick="startIsland(10)">
+                    <span class="node-badge grade-4">4º Ano</span>
+                    <div class="island-icon"><i class="fas fa-brackets-curly"></i></div>
+                    <h3>Ilha 10: Expressões</h3>
+                    <p>Ordem das operações</p>
+                </div>
+
+                <div class="island-card color-5" onclick="startIsland(11)">
+                    <span class="node-badge grade-4">4º Ano</span>
+                    <div class="island-icon"><i class="fas fa-pie-chart"></i></div>
+                    <h3>Ilha 11: Frações Básicas</h3>
+                    <p>Partes de um todo</p>
+                </div>
+
+                <div class="island-card color-6" onclick="startIsland(12)">
+                    <span class="node-badge grade-4">4º Ano</span>
+                    <div class="island-icon"><i class="fas fa-coins"></i></div>
+                    <h3>Ilha 12: Sistema Monetário</h3>
+                    <p>Somas e decimais</p>
+                </div>
+
+                <div class="island-card color-1" onclick="startIsland(13)">
+                    <span class="node-badge grade-5">5º Ano</span>
+                    <div class="island-icon"><i class="fas fa-percent"></i></div>
+                    <h3>Ilha 13: Porcentagem</h3>
+                    <p>Cálculos percentuais</p>
+                </div>
+
+                <div class="island-card color-2" onclick="startIsland(14)">
+                    <span class="node-badge grade-5">5º Ano</span>
+                    <div class="island-icon"><i class="fas fa-calculator"></i></div>
+                    <h3>Ilha 14: Divisão com Resto</h3>
+                    <p>Divisões não exatas</p>
+                </div>
+
+                <div class="island-card color-3" onclick="startIsland(15)">
+                    <span class="node-badge grade-5">5º Ano</span>
+                    <div class="island-icon"><i class="fas fa-shapes"></i></div>
+                    <h3>Ilha 15: Perímetro</h3>
+                    <p>Medidas de figuras</p>
+                </div>
+
+                <div class="island-card color-4" onclick="startIsland(16)">
+                    <span class="node-badge grade-6">6º Ano</span>
+                    <div class="island-icon"><i class="fas fa-superscript"></i></div>
+                    <h3>Ilha 16: Potenciação</h3>
+                    <p>Bases e expoentes</p>
+                </div>
+
+                <div class="island-card color-5" onclick="startIsland(17)">
+                    <span class="node-badge grade-6">6º Ano</span>
+                    <div class="island-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>Ilha 17: MMC</h3>
+                    <p>Múltiplos comuns</p>
+                </div>
+
+                <div class="island-card color-6" onclick="startIsland(18)">
+                    <span class="node-badge grade-6">6º Ano</span>
+                    <div class="island-icon"><i class="fas fa-square-root-alt"></i></div>
+                    <h3>Ilha 18: Equação 1º Grau</h3>
+                    <p>Encontrando o X</p>
+                </div>
+
+                <div class="island-card color-1" onclick="startIsland(19)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-drafting-compass"></i></div>
+                    <h3>Ilha 19: Geometria</h3>
+                    <p>Ângulos complementares</p>
+                </div>
+
+                <div class="island-card color-2" onclick="startIsland(20)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-chart-line"></i></div>
+                    <h3>Ilha 20: Média Aritmética</h3>
+                    <p>Estatística simples</p>
+                </div>
+
+                <div class="island-card color-3" onclick="startIsland(21)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-ruler-combined"></i></div>
+                    <h3>Ilha 21: Pitágoras</h3>
+                    <p>Triângulos retângulos</p>
+                </div>
+
+                <div class="island-card color-4" onclick="startIsland(22)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-atom"></i></div>
+                    <h3>Ilha 22: Equação 2º Grau</h3>
+                    <p>Fórmula de Bhaskara</p>
+                </div>
+
+                <div class="island-card color-5" onclick="startIsland(23)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-wave-square"></i></div>
+                    <h3>Ilha 23: Trigonometria</h3>
+                    <p>Seno e cosseno</p>
+                </div>
+
+                <div class="island-card color-6" onclick="startIsland(24)">
+                    <span class="node-badge final">Avançado</span>
+                    <div class="island-icon"><i class="fas fa-project-diagram"></i></div>
+                    <h3>Ilha 24: Funções</h3>
+                    <p>f(x) e variáveis</p>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- PÁGINA DE ESTUDO & ACADEMIA DE VÍDEOS -->
+<div id="screen-study" class="screen">
+    <div class="top-bar">
+        <div class="user-info">
+            <div class="avatar-circle"><i class="fas fa-graduation-cap"></i></div>
+            <span>Academia de Estudos</span>
+        </div>
+        <div class="top-actions">
+            <button class="btn btn-secondary" onclick="showScreen('screen-map')">
+                <i class="fas fa-arrow-left"></i> Voltar ao Mapa
+            </button>
+        </div>
+    </div>
+
+    <div class="study-wrapper">
+        <div class="study-hero">
+            <h1><i class="fas fa-video"></i> Videoaulas Preparatórias</h1>
+            <p>Selecione um tópico para reforçar seus conhecimentos antes de encarar as Ilhas!</p>
+        </div>
+
+        <div class="videos-grid">
+            
+            <!-- ILHA 7 -->
+            <div class="video-card" onclick="openVideo('Multiplicação Fundamental', 'https://www.youtube.com/embed/kBy586VyJGw')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/kBy586VyJGw/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 7</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Multiplicação Fundamental</h3>
+                    <p>Aprenda os conceitos básicos da multiplicação e resolva suas dúvidas.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 8 -->
+            <div class="video-card" onclick="openVideo('Divisão Simples', 'https://www.youtube.com/embed/q-810tv73NI')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/q-810tv73NI/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 8</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Aprenda Divisão</h3>
+                    <p>Passo a passo simples para compreender a divisão de números inteiros.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 9 -->
+            <div class="video-card" onclick="openVideo('Subtração com Empréstimo', 'https://www.youtube.com/embed/3_WFdppEp_U')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/3_WFdppEp_U/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 9</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Subtração com Empréstimo</h3>
+                    <p>Entenda a regra do pedir emprestado nas contas de subtração.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 10 -->
+            <div class="video-card" onclick="openVideo('Expressões Numéricas', 'https://www.youtube.com/embed/LwOvCw6dfiI')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/LwOvCw6dfiI/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 10</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Expressões Numéricas</h3>
+                    <p>Aprenda a ordem de prioridade das operações matemáticas.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 11 -->
+            <div class="video-card" onclick="openVideo('Introdução às Frações', 'https://www.youtube.com/embed/BWFnqKYxgMo')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/BWFnqKYxgMo/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 11</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Introdução às Frações</h3>
+                    <p>Compreenda o conceito de numerador e denominador.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 12 -->
+            <div class="video-card" onclick="openVideo('Sistema Monetário', 'https://www.youtube.com/embed/ijhusRH1P7M')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/ijhusRH1P7M/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 12</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Sistema Monetário</h3>
+                    <p>Aprenda a operar com dinheiro e números decimais.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 13 -->
+            <div class="video-card" onclick="openVideo('Porcentagem Básica', 'https://www.youtube.com/embed/azedx0uou64')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/azedx0uou64/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 13</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Porcentagem no Dia a Dia</h3>
+                    <p>Cálculos práticos para entender como funciona a porcentagem.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 15 -->
+            <div class="video-card" onclick="openVideo('Cálculo de Perímetro', 'https://www.youtube.com/embed/dArATPsuLjM')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/dArATPsuLjM/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 15</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Calculando o Perímetro</h3>
+                    <p>Aprenda a somar o contorno de figuras geométricas planas.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 16 -->
+            <div class="video-card" onclick="openVideo('Potenciação', 'https://www.youtube.com/embed/FzkAWvOAEUI')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/FzkAWvOAEUI/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 16</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Potenciação Básica</h3>
+                    <p>Aprenda a calcular expoentes e bases com facilidade.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 17 -->
+            <div class="video-card" onclick="openVideo('Mínimo Múltiplo Comum', 'https://www.youtube.com/embed/O4DqgH8JMm0')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/O4DqgH8JMm0/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 17</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Como Calcular o MMC</h3>
+                    <p>Método de fatoração prática para encontrar o MMC.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 18 -->
+            <div class="video-card" onclick="openVideo('Equação do 1º Grau', 'https://www.youtube.com/embed/j6dy4VrsFvA')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/j6dy4VrsFvA/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 18</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Equação do 1º Grau</h3>
+                    <p>Descubra como isolar o X e resolver equações simples.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 19 -->
+            <div class="video-card" onclick="openVideo('Ângulos Complementares', 'https://www.youtube.com/embed/U_735SRkPvA')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/U_735SRkPvA/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 19</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Ângulos Complementares</h3>
+                    <p>Entenda o conceito de ângulos que juntos somam 90 graus.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 20 -->
+            <div class="video-card" onclick="openVideo('Média Aritmética', 'https://www.youtube.com/embed/ZMFo1lLFTc8')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/ZMFo1lLFTc8/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 20</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Média Aritmética</h3>
+                    <p>Como somar valores e encontrar a média simples.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 21 -->
+            <div class="video-card" onclick="openVideo('Teorema de Pitágoras', 'https://www.youtube.com/embed/RxfPjqXx-g0')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/RxfPjqXx-g0/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 21</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Teorema de Pitágoras</h3>
+                    <p>Relação de catetos e hipotenusa no triângulo retângulo.</p>
+                </div>
+            </div>
+
+            <!-- ILHA 22 -->
+            <div class="video-card" onclick="openVideo('Equação do 2º Grau', 'https://www.youtube.com/embed/LNLvMo1PWok')">
+                <div class="thumbnail">
+                    <img class="thumb-img" src="https://img.youtube.com/vi/LNLvMo1PWok/hqdefault.jpg" alt="Capa do Vídeo">
+                    <span class="tag">Ilha 22</span>
+                    <i class="fas fa-play-circle play-icon"></i>
+                </div>
+                <div class="video-info">
+                    <h3>Equação do 2º Grau</h3>
+                    <p>Resolução de equações de segundo grau com fórmula de Bhaskara.</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+    <!-- TELA 4: QUIZ EM TELA CHEIA (AVALIAÇÃO) -->
+    <div id="screen-quiz" class="screen">
+        <div class="full-quiz-wrapper">
+            <div class="quiz-top-bar">
+                <div class="quiz-info-left">
+                    <span class="badge-island" id="current-island-title">Ilha Desconhecida</span>
+                    <span class="badge-counter" id="question-counter">Questão 1/12</span>
+                </div>
+                <div class="quiz-info-right">
+                    <span class="timer-badge"><i class="fas fa-stopwatch"></i> <span id="timer-display">30s</span></span>
+                    <span class="score-badge"><i class="fas fa-star"></i> Pontos: <span id="quiz-score">0</span></span>
+                </div>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+
+            <div class="quiz-full-content">
+                <div class="question-box">
+                    <p class="question-text" id="question-text">Carregando desafio...</p>
+                </div>
+
+                <div class="options-grid-full" id="options-grid">
+                    <!-- Opções geradas via JS -->
+                </div>
+            </div>
+
+            <div class="quiz-bottom-bar">
+                <div class="feedback-message" id="feedback-message"></div>
+                <button class="btn btn-primary btn-lg" id="btn-next" style="display: none;">Próxima Questão ➡️</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TELA 5: PAINEL DO PROFESSOR (ADMIN) -->
+    <div id="screen-admin" class="screen">
+        <div class="admin-container">
+            <div class="admin-header">
+                <h2><i class="fas fa-user-shield"></i> Painel do Professor & Auditoria Antifraude</h2>
+                <button class="btn btn-secondary" onclick="showScreen('screen-map')"><i class="fas fa-arrow-left"></i> Voltar ao Mapa</button>
+            </div>
+
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Registros em tempo real de infrações, trocas de aba e saídas do modo de tela cheia durante as avaliações:</p>
+
+            <table class="logs-table">
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Explorador / Aluno</th>
+                        <th>Tipo de Evento</th>
+                        <th>Detalhes do Monitoramento</th>
+                    </tr>
+                </thead>
+                <tbody id="logs-tbody">
+                    <tr><td colspan="4" style="text-align: center;">Nenhum registro de infração nesta sessão.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- FOLHA OFICIAL DE IMPRESSÃO DA PROVA (A4) -->
+    <div class="print-sheet">
+        <div class="school-header-table">
+            <div class="school-logo-cell">
+                <div class="logo-box">IM</div>
+            </div>
+            <div class="school-info-cell">
+                <div class="school-title">ESCOLA MUNICIPAL DAS ILHAS DA MATEMÁTICA</div>
+                <div class="teacher-line"><strong>PROFESSOR(A):</strong> ________________________________________</div>
+                <div class="student-line"><strong>ALUNO(A):</strong> <span id="print-student-name">____________________________________</span></div>
+            </div>
+            <div class="school-data-cell">
+                <div class="city-line">FAZENDA RIO GRANDE - PR</div>
+                <div class="date-line"><strong>DATA:</strong> _____/_____/2026</div>
+                <div class="grade-line"><strong>SÉRIE:</strong> <span id="print-grade-name">3º Ano</span></div>
+                <div class="score-line"><strong>NOTA:</strong> ________ / 10,0</div>
+            </div>
+        </div>
+
+        <div class="exam-title-banner">
+            <h2 id="print-exam-title">AVALIAÇÃO BIMESTRAL DE MATEMÁTICA</h2>
+        </div>
+
+        <div class="print-questions-container" id="print-questions-list">
+            <!-- As questões serão injetadas dinamicamente aqui para impressão -->
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
